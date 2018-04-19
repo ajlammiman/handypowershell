@@ -1,11 +1,14 @@
 ﻿$repoPath = https://github.com/ajlammiman/
 
+
 function SetUpNewReactProject($folderName) 
 {
-    git clone https://github.com/ajlammiman/reactprojectbase.git C:\inetpub\wwwroot\$folderName
-    cd C:\inetpub\wwwroot\$folderName
-    npm install
+    $repo = https://github.com/ajlammiman/reactprojectbase.git
+    $path = C:\inetpub\wwwroot\$folderName
+
+    GitCheckoutRepo($repo, $path)
 }
+
 
 function SetUpNewConsoleProject($folderName) 
 {
