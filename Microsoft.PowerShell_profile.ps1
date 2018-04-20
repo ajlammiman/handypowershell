@@ -1,28 +1,33 @@
-$repoPath = "https://github.com/ajlammiman/"
+$repoPath = 'https://github.com/ajlammiman/'
+$rootPath = 'C:\inetpub\wwwroot\'
 Import-Module posh-git
 
 set-location C:\inetpub\wwwroot
 
-function SetUpNewReactProject($folderName) 
+function SetUpNewReactProject($folderName, $newRepoName) 
 {
-    $repo = $repoPath + "/reactprojectbase.git"
-    $path = "C:\inetpub\wwwroot\" + $folderName
+    $repo = 'reactprojectbase'
+    $path = $rootPath  + $folderName
 
-    GitCheckoutRepo($repo, $path)
+    GitRecreateRepo($repo, $path)
 }
 
 
-function SetUpNewConsoleProject($folderName) 
+function SetUpNewConsoleProject($folderName, $newRepoName) 
 {
-   $repo = $repoPath + 'basicconsoleproject.git'
+   $repo = 'basicconsoleproject'
    $path = 'C:\inetpub\wwwroot\' + $folderName
 
-    GitCheckoutRepo($repo, $path)
+    GitRecreateRepo($repo, $path, $newRepoName)
 }
 
-function GitCheckoutRepo($repo, $path)
+function GitRecreateRepo($oldRepo, $path, $newRepoName)
 {
-    git clone $repo $path
+    git clone --bar $repoPath + $oldRepo + '.git'
+    cd $oldRepo + '.git'
+    git push --mirror $repoPath + $newRepoName
+    cd ..
+    rm -rf $oldRepo + '.git'
 }
 
 
