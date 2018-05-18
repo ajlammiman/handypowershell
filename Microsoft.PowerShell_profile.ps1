@@ -1,28 +1,31 @@
-$repoPath = 'https://github.com/ajlammiman/'
+$repoPath = 'ssh://git@github.com/ajlammiman/'
 $rootPath = 'C:\inetpub\wwwroot\'
 $token = ''
 Import-Module posh-git
+Set-Alias ssh-agent "$env:ProgramFiles\git\usr\bin\ssh-agent.exe"
+Set-Alias ssh-add "$env:ProgramFiles\git\usr\bin\ssh-add.exe"
+Start-SshAgent -Quiet
 
 set-location C:\inetpub\wwwroot
 
 function SetUpNewReactProject($folderName, $newRepoName) 
 {
-    $repo = 'reactprojectbase'
+    $repoReact = 'reactprojectbase'
     $path = $rootPath  + $folderName
 
-    GitRecreateRepo($repo, $path)
+    GitRecreateRepo($repoReact, $path)
 }
 
 
-function SetUpNewConsoleProject($folderName, $newRepoName) 
+function SetUpNewConsoleProject([string]$folderName, [string]$newRepoName)
 {
-   $repo = 'basicconsoleproject'
+   $repoConsole = 'basicconsoleproject'
    $path = 'C:\inetpub\wwwroot\' + $folderName
-
-    GitRecreateRepo($repo, $path, $newRepoName)
+   
+    GitRecreateRepo -oldRepo $repoConsole -path $path -newRepoName $newRepoName
 }
 
-function GitCreateNewRepo($repoName, $token)
+function GitCreateNewRemoteRepo($repoName, $token)
 {
     $Base64Token = [System.Convert]::ToBase64String([char[]]$token);
 
@@ -38,19 +41,29 @@ function GitCreateNewRepo($repoName, $token)
     Invoke-RestMethod -Headers $Headers -Uri https://api.github.com/user/repos -Body $Body -Method Post
 }
 
-function GitRecreateRepo($oldRepo, $newRepoName)
+function GitRecreateRepo([string]$oldRepo, [string]$newRepoName)
 {
-    git clone --bar $repoPath + $oldRepo + '.git'
-    cd $oldRepo + '.git'
+    $oldRepoGit = $oldRepo + '.git'
+    $oldRepoAddress = $repoPath + $oldRepoGit
+    $newRepoLoc = $repoPath + $newRepoName + '.git'
+    $newRepoFolder = $rootPath + $newRepoName 
+  
+    git clone --bare $oldRepoAddress
+    cd $oldRepoGit
 
-    GitCreateNewRepo($repoName, $token)
-
-    git push --mirror $repoPath + $newRepoName
+    GitCreateNewRemoteRepo -repoName $newRepoName -token $token
+    
+    git push --mirror $newRepoLoc
     cd ..
-    rm -rf $oldRepo + '.git'
+    git rm -rf $oldRepoGit
+    cd $rootPath
+    New-Item -Path $newRepoFolder -ItemType directory
+    git init 
+    git clone $newRepoLoc
+    cd $newRepoFolder
 }
 
+#GitRecreateRepo 'basicconsoleproject' 'C:\inetpub\wwwroot\' 'DummyRepo2'
 
 
-GitRecreateRepo 'basicconsoleproject' 'TestRepo'
 
